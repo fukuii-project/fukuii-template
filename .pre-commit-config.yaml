@@ -7,24 +7,24 @@
 # them current — do not blindly `autoupdate`.
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.3   # verify/bump via sentinel
+    rev: v8.30.1   # verified current stable via sentinel (2026-07-18)
     hooks:
       - id: gitleaks
 
   # GitHub Actions hardening — a gap the org Security Configuration does NOT cover
   # (it scans code/secrets/deps, not workflow files). zizmor catches the tj-actions /
   # trivy-action attack class (injection, unpinned actions, cache poisoning).
-  - repo: https://github.com/zizmorcore/zizmor-pre-commit   # verify repo + rev via sentinel
-    rev: v1.5.2
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit   # repo confirmed correct via sentinel
+    rev: v1.27.0   # verified current stable via sentinel (2026-07-18)
     hooks:
       - id: zizmor
-  - repo: https://github.com/rhysd/actionlint                # verify repo + rev via sentinel
-    rev: v1.7.7
+  - repo: https://github.com/rhysd/actionlint                # repo confirmed correct via sentinel (no mirror needed)
+    rev: v1.7.12   # verified current stable via sentinel (2026-07-18)
     hooks:
       - id: actionlint
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0    # verify/bump via sentinel
+    rev: v6.0.0    # verified current stable via sentinel (2026-07-18); no hooks used here were removed/renamed
     hooks:
       - id: detect-private-key
       - id: check-added-large-files
