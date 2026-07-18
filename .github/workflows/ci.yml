@@ -1,0 +1,19 @@
+# Thin caller → the org-wide reusable checks (gitleaks + zizmor + actionlint + hygiene).
+# The logic lives once in fukuii-project/.github; edit there and every repo updates.
+# Add this repo's own build/test job below the `checks` job as needed.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    uses: fukuii-project/.github/.github/workflows/checks.yml@main
+
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@<sha>      # pin via sentinel
+  #     - run: {{BUILD_AND_TEST}}

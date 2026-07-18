@@ -1,0 +1,36 @@
+# OPT-IN gap-filler — Semgrep SAST for repos the org baseline CodeQL can't cover.
+#
+# The org Security Configuration runs CodeQL on every repo, but **CodeQL does NOT support
+# Scala**. Enable this ONLY on Scala/JVM repos (e.g. the fukuii client). On CodeQL-covered
+# repos (JS/TS/Go/Python/…) it is redundant — delete it there. Pair with **Scala Steward**
+# for Scala dependency updates (Dependabot's sbt support is version-updates-only).
+#
+# To adopt: uncomment the push/pull_request triggers below.
+# Fully-open alternative to Semgrep CE: Opengrep (`pipx install opengrep`; same rules/SARIF).
+# NOTE (supply-chain): pin every action `uses:` to a commit SHA via sentinel before enabling.
+name: semgrep
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+
+permissions:
+  contents: read
+  security-events: write   # upload SARIF to code scanning
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5            # pin to SHA via sentinel
+      - name: Run Semgrep
+        run: |
+          pipx install semgrep               # Opengrep: pipx install opengrep
+          semgrep scan --config auto --sarif --output semgrep.sarif
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3   # pin to SHA via sentinel
+        with:
+          sarif_file: semgrep.sarif

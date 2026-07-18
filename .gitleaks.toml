@@ -1,0 +1,19 @@
+# gitleaks config for fukuii-project repos.
+# Extends the built-in ruleset; add repo-specific allowlist entries below.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "fukuii-project baseline allowlist"
+paths = [
+  '''\.env\.example$''',
+  '''\.env\..*\.example$''',
+  '''.*\.tfvars\.example$''',
+]
+# Placeholder tokens used in examples/docs (never real secrets):
+regexes = [
+  '''__set_me__''',
+  '''__password__''',
+  '''__generate_a_random_secret__''',
+  '''__never_a_real_key_here__''',
+]

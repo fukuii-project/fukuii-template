@@ -1,0 +1,47 @@
+# Dependabot — fukuii-project baseline.
+# 7-day cooldown blocks brand-new (potentially compromised) releases; security
+# advisories bypass the cooldown automatically. Add your language ecosystem(s)
+# below by uncommenting — each MUST keep the cooldown block.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+      semver-major-days: 21
+
+  # --- uncomment the ecosystem(s) this repo uses ---
+  #
+  # NOT SUPPORTED by Dependabot: Scala / sbt. The Fukuii client uses **Scala Steward**
+  # (a separate workflow, `.scala-steward.conf`) for Scala deps — do not expect
+  # dependabot to update `build.sbt` / `project/*.scala`.
+  #
+  # `npm` covers npm, pnpm, and yarn (detected from the lockfile) — use it for
+  # Astro / Next / Vite frontends (e.g. the website uses Astro + pnpm).
+  #
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }
+  #
+  # - package-ecosystem: "pip"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }
+  #
+  # - package-ecosystem: "gomod"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }
+  #
+  # - package-ecosystem: "cargo"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }
+  #
+  # - package-ecosystem: "docker"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }

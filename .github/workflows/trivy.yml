@@ -1,0 +1,32 @@
+# OPT-IN gap-filler — Trivy for repos with Dockerfiles / compose / IaC.
+#
+# The org baseline (CodeQL + secret scanning) does NOT scan container images or IaC.
+# Enable this on Docker/infra repos (e.g. ecosystem-infra, the client image). Delete it
+# from source-only repos where it does nothing.
+#
+# To adopt: uncomment the push/pull_request triggers below.
+# NOTE (supply-chain): pin every action `uses:` to a commit SHA via sentinel before enabling.
+name: trivy
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5                    # pin to SHA via sentinel
+      - name: Trivy filesystem + config + secret scan
+        uses: aquasecurity/trivy-action@0.28.0       # pin to SHA via sentinel
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true

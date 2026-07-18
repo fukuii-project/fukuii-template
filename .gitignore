@@ -1,0 +1,141 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# fukuii-project — baseline .gitignore  (hardened superset)
+#
+# Inherited by every fukuii-project repo via `fukuii-template`. It is a SUPERSET:
+# it protects the secret/artifact shapes of every stack we use (JVM/Scala, Node/JS,
+# Go, Python, Rust, Docker/infra) because ONE template seeds them all.
+#
+# RULE: repos are PUBLIC by default. Never remove the SECURITY blocks below.
+# Add repo-specific ignores under the marked section at the bottom.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# == SECURITY: secrets & credentials (never commit) ==
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+service-account.json
+*.credentials
+secrets/
+.secrets/
+*.secret
+
+# == SECURITY: blockchain / node key material ==
+/keystore/
+wallet.json
+mnemonic.txt
+*.nodekey
+node.key
+etc-node.key
+jwt.hex
+jwtsecret
+
+# == SECURITY: infra / cloud ==
+*.tfvars
+!*.tfvars.example
+*.tfstate
+*.tfstate.*
+.terraform/
+*.kubeconfig
+kubeconfig
+.pgpass
+docker-compose.override.yml
+
+# == OS ==
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# == Editors / IDE ==
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.metals/
+.bloop/
+.bsp/
+metals.sbt
+.ensime
+.ensime_cache/
+
+# == Logs / temp ==
+*.log
+*.log.*
+logs/
+tmp/
+*.tmp
+tmp-*.json
+*.pid
+
+# == JVM / Scala / sbt ==
+target/
+out/
+project/boot/
+project/plugins/project/
+project/project/
+project/metals.sbt
+*.class
+
+# == Node / JS / TS ==
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+.turbo/
+coverage/
+*.tsbuildinfo
+.pnp.*
+.yarn/*
+!.yarn/patches
+
+# == Go ==
+bin/
+*.exe
+*.test
+
+# == Python ==
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# == Docs build ==
+site/
+_site/
+
+# == Nix / direnv ==
+result
+.direnv/
+.nix/
+
+# == Claude Code — agentic tooling ==
+# Claude Code keeps its runtime state (credentials, session history, checkpoints,
+# caches, per-project state, ~/.claude.json) in your HOME dir (~/.claude/), NOT in
+# the repo — so the project only needs to ignore the one local settings file, which
+# Claude Code auto-ignores anyway. Committed by design: .claude/settings.json,
+# .claude/{agents,skills,hooks,commands}/, .mcp.json, AGENTS.md.
+.claude/settings.local.json
+.claude/*.local.json
+
+# Personal working/scratch files: prefer `.git/info/exclude` (a per-checkout,
+# non-shared ignore) over adding machine-specific patterns to this shared file.
+# Vendored reference repos → git submodules or an out-of-tree bootstrap clone.
+# Worktrees → sibling dirs OUTSIDE the repo. Task tracking → GitHub Issues/Projects.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Repo-specific ignores BELOW this line (safe to edit per repo):
+# ─────────────────────────────────────────────────────────────────────────────
