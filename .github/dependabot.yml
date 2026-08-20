@@ -14,9 +14,16 @@ updates:
 
   # --- uncomment the ecosystem(s) this repo uses ---
   #
-  # NOT SUPPORTED by Dependabot: Scala / sbt. The Fukuii client uses **Scala Steward**
-  # (a separate workflow, `.scala-steward.conf`) for Scala deps — do not expect
-  # dependabot to update `build.sbt` / `project/*.scala`.
+  # `sbt` covers Scala projects via root-level `build.sbt` — version updates
+  # only, NOT security updates (GitHub's own distinction; sbt support shipped
+  # 2026-05-26). Scala Steward (a separate workflow, `.scala-steward.conf`) is
+  # complementary if adopted, not a substitute — it does not close the
+  # security-update gap sbt support leaves open.
+  #
+  # - package-ecosystem: "sbt"
+  #   directory: "/"
+  #   schedule: { interval: "weekly" }
+  #   cooldown: { default-days: 7, semver-major-days: 21 }
   #
   # `npm` covers npm, pnpm, and yarn (detected from the lockfile) — use it for
   # Astro / Next / Vite frontends (e.g. the website uses Astro + pnpm).
