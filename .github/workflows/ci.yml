@@ -15,6 +15,9 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   checks:
     uses: fukuii-project/.github/.github/workflows/checks.yml@aceddac07800571e8af7d2c2a74b852eb22dc3a8 # main @ 2026-07-18
