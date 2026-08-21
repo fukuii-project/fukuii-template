@@ -5,7 +5,7 @@ disable-model-invocation: true
 user-invocable: true
 model: sonnet
 argument-hint: "dry-run"
-allowed-tools: Read, Edit, Write, Bash(.claude/skills/onboard/scripts/onboard-preflight.sh*)
+allowed-tools: Read, Bash(${CLAUDE_SKILL_DIR}/scripts/onboard-preflight.sh*), Bash(.claude/skills/onboard/scripts/onboard-preflight.sh*), Edit(./AGENTS.md), Edit(./.gitignore), Edit(./.npmrc), Edit(./.github/dependabot.yml), Edit(./.github/workflows/semgrep.yml), Edit(./.github/workflows/trivy.yml)
 ---
 
 # Onboard a seeded repo
@@ -15,11 +15,33 @@ Turns the conditional half of `.github/SETUP-CHECKLIST.md` into one interview th
 decisions are and why; this skill is how they get made and applied. If the two ever
 disagree, the checklist is right and this skill is stale.
 
+**Why the tool grants are scoped to six files.** A skill checked into a repo can
+grant itself broad tool access, and every clone runs it — Anthropic's own guidance
+is to *"review the `allowed-tools` of skills checked into a repository before you
+run Claude Code there"*, so this one is written to survive that review. It names the
+six files it touches and nothing else. They are `Edit(...)` rules even for the file
+it *creates*, because Claude Code *"checks file permissions against `Edit(path)` and
+`Read(path)` rules only"* — a `Write(...)` path rule is accepted, never consulted,
+and warned about at startup (<https://code.claude.com/docs/en/permissions>).
+`allowed-tools` never restricts, so this costs nothing but a permission prompt if
+the skill ever needs a seventh file — which is the correct outcome, not a bug.
+Deleting and pushing metadata are deliberately absent: `git rm` and `gh repo edit`
+prompt every time.
+
 ## CRITICAL — the three rules that matter
 
 1. **Never delete a file the preflight has not marked `RECOVERABLE`.** Step 1's
    report is the pre-image gate. `UNSAFE` means git holds no recoverable copy, so
    the deletion is irreversible — stop and tell the operator to commit first.
+   **The second half of that gate is `"ask": ["Bash(git rm *)"]` in this repo's own
+   `.claude/settings.json`, and it is there so the gate travels with the
+   template.** Omitting `git rm` from `allowed-tools` is not a gate: `allowed-tools`
+   pre-approves, it does not restrict, so on a machine whose settings already allow
+   `Bash(git *)` the deletion would run unprompted. An `ask` rule is what actually
+   prompts — permission rules are *"evaluated in order: deny, then ask, then allow"*
+   and *"a matching ask rule prompts even when a more specific allow rule also
+   matches the same call"* (<https://code.claude.com/docs/en/permissions>). Do not
+   remove that line to make a run quieter.
 2. **Never touch a pinned SHA or a `rev:`.** Action pins in `.github/workflows/*`
    and `rev:` values in `.pre-commit-config.yaml` are supply-chain state, set
    deliberately and audited elsewhere. This skill does not read them, bump them,
@@ -30,8 +52,18 @@ disagree, the checklist is right and this skill is stale.
 ## 1. Preflight (mechanical — one call, no judgment)
 
 ```bash
-.claude/skills/onboard/scripts/onboard-preflight.sh
+${CLAUDE_SKILL_DIR}/scripts/onboard-preflight.sh
 ```
+
+**Run it by that path, unquoted.** Claude Code substitutes `${CLAUDE_SKILL_DIR}` in
+both the skill body and its `Bash` `allowed-tools` rules, so the pre-approval
+matches whichever directory the session started in
+(<https://code.claude.com/docs/en/skills>). Quoting it breaks the match. The
+repo-relative form `.claude/skills/onboard/scripts/onboard-preflight.sh` is
+pre-approved too, as a fallback for a Claude Code old enough not to substitute the
+variable — but it only works **from the repository root**: run from a subdirectory
+it neither resolves nor matches the pre-approval. If you end up on that path, say
+so and approve the prompt rather than rewriting the command.
 
 Read-only. It reports whether onboarding already ran, what stack markers exist,
 whether each deletion target is recoverable, current Dependabot and trigger state,
