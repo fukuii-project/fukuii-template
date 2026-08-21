@@ -27,6 +27,19 @@ secrets/
 .secrets/
 *.secret
 
+# SSH / signing key material — extensionless, so *.pem and *.key do NOT match these.
+id_rsa
+id_ecdsa
+id_ed25519
+
+# == SECURITY: package-registry auth ==
+# A project .npmrc is the standard home for `//registry.npmjs.org/:_authToken=`,
+# and these repos are public. No leading slash, so a nested workspace .npmrc is
+# covered too. A policy-only .npmrc is a deliberate decision to take at the time.
+.npmrc
+.yarnrc
+.yarnrc.yml
+
 # == SECURITY: blockchain / node key material ==
 /keystore/
 wallet.json
@@ -123,18 +136,45 @@ result
 .nix/
 
 # == Claude Code — agentic tooling ==
-# Claude Code keeps its runtime state (credentials, session history, checkpoints,
-# caches, per-project state, ~/.claude.json) in your HOME dir (~/.claude/), NOT in
-# the repo — so the project only needs to ignore the one local settings file, which
-# Claude Code auto-ignores anyway. Committed by design: .claude/settings.json,
-# .claude/{agents,skills,hooks,commands}/, .mcp.json, AGENTS.md.
+# This directory is TRACKED so repo-local agents, skills and rules travel with the
+# repo. Only machine-local and agent-written state is held back. Do not invert this
+# into a blanket ignore: an agent inside an ignored directory never reaches a clone.
+# Committed by design: .claude/settings.json, .claude/{agents,skills,hooks,commands}/,
+# AGENTS.md.
+#
+# Most Claude Code runtime state does live in ~/.claude/, but NOT all of it:
+# background agent sessions create git worktrees under .claude/worktrees/, and an
+# unignored one lets `git add -A` commit a dangling mode-160000 gitlink into every
+# clone. launch.json and scheduled_tasks.json are likewise written in-repo.
 .claude/settings.local.json
 .claude/*.local.json
+.claude/worktrees/
+.claude/agent-memory-local/
+.claude/launch.json
+.claude/scheduled_tasks.json
+CLAUDE.local.md
+.claude/**/*.local.*
+.claude/**/*-local/
 
-# Personal working/scratch files: prefer `.git/info/exclude` (a per-checkout,
-# non-shared ignore) over adding machine-specific patterns to this shared file.
+# == Internal development directory ==
+# Session notes, design briefs, dev logs, scratch scripts. Never commit.
+.local/
+
+# == Ad-hoc planning docs at root (prefer .local/ going forward) ==
+SESSION_NOTES.md
+PLANNING.md
+SCRATCH.md
+*.scratch.*
+*.draft.*
+
+# Personal, one-off scratch files with no fleet-wide name still belong in
+# `.git/info/exclude` (per-checkout, non-shared) — not a new pattern here.
+# .local/ and SESSION_NOTES.md above are the shared convention for that content
+# precisely because they are project-wide, not machine-specific.
 # Vendored reference repos → git submodules or an out-of-tree bootstrap clone.
-# Worktrees → sibling dirs OUTSIDE the repo. Task tracking → GitHub Issues/Projects.
+# A manually created `git worktree` → a sibling dir OUTSIDE the repo. Claude
+# Code's own worktrees are different: created in-repo, ignored above instead.
+# Task tracking → GitHub Issues/Projects.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Repo-specific ignores BELOW this line (safe to edit per repo):
