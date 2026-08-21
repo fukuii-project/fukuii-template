@@ -1,6 +1,13 @@
 # Thin caller → the org-wide reusable checks (gitleaks + zizmor + actionlint + hygiene).
-# The logic lives once in fukuii-project/.github; edit there and every repo updates.
+# The logic lives once in fukuii-project/.github; bump the SHA below to pick up a change there.
 # Add this repo's own build/test job below the `checks` job as needed.
+#
+# NOTE (supply-chain, sentinel, 2026-08-21): pinned per Rule 7 (supply-chain-security.md) rather
+# than @main — fukuii-project/.github's main has no branch protection and no tags (verified live
+# via the GitHub API), so an unpinned ref here would let anyone with push access to that repo
+# change what every seeded repo's CI runs, unreviewed. To bump: resolve the new SHA
+# (gh api repos/fukuii-project/.github/commits/main --jq .sha), review the diff at that commit,
+# then update both the SHA below and this comment's date.
 name: CI
 
 on:
@@ -10,7 +17,7 @@ on:
 
 jobs:
   checks:
-    uses: fukuii-project/.github/.github/workflows/checks.yml@main
+    uses: fukuii-project/.github/.github/workflows/checks.yml@aceddac07800571e8af7d2c2a74b852eb22dc3a8 # main @ 2026-07-18
 
   # build:
   #   runs-on: ubuntu-latest
