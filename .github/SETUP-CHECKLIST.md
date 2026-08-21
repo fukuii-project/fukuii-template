@@ -13,7 +13,7 @@ This repo fills the **gaps the org baseline can't reach**, by stack:
 | Dependabot **version-update** ecosystems + 7-day cooldown (org does alerts/updates, not version-bump config) | all | uncomment your ecosystem in `.github/dependabot.yml` |
 | **Scala SAST** — CodeQL can't parse Scala | Scala/JVM repos | enable `.github/workflows/semgrep.yml` **+** add Scala Steward |
 | **Container / IaC scanning** — CodeQL doesn't scan images | Docker/compose repos | enable `.github/workflows/trivy.yml` |
-| **pnpm release-age gate** — pnpm's 24h default < 7-day policy | JS/pnpm repos | add `.npmrc` `minimum-release-age=10080` (verify the exact key via sentinel) |
+| **pnpm release-age gate** — pnpm's 24h default < 7-day policy | JS/pnpm repos | Add `minimum-release-age=10080` to `.npmrc` (kebab-case — the confirmed, pnpm-normalized key) — **then un-ignore the file**: remove the `.npmrc` line from this repo's `.gitignore`, or negate it `!.npmrc` (never `!/.npmrc`, which still hides a nested workspace `.npmrc`). If this `.npmrc` also carries a registry auth token, interpolate it — `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` — never a literal value. `sentinel` audits the gate by its *resolved* value (`pnpm config get minimumReleaseAge`), not by reading the file. |
 
 ## Per repo (a few clicks)
 - [ ] Install and wire pre-commit first: `pipx install pre-commit && pre-commit install`
