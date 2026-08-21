@@ -16,6 +16,10 @@ This repo fills the **gaps the org baseline can't reach**, by stack:
 | **pnpm release-age gate** — pnpm's 24h default < 7-day policy | JS/pnpm repos | add `.npmrc` `minimum-release-age=10080` (verify the exact key via sentinel) |
 
 ## Per repo (a few clicks)
+- [ ] Install and wire pre-commit first: `pipx install pre-commit && pre-commit install`
+  (gaps table, row 1). Every other box below results in a commit, and none of the local
+  hooks (gitleaks, zizmor, actionlint, end-of-file-fixer) run until this is done —
+  skipping it is how a repo carries a broken hook config with nothing ever having run it.
 - [ ] Set the repo **description** + **topics** (`fukuii`, `ethereum-classic`, …).
 - [ ] Replace every `{{PLACEHOLDER}}` in `README.md`, `AGENTS.md`, `NOTICE`.
 - [ ] Fill in `AGENTS.md` (the agent source of truth — `CLAUDE.md`/`copilot-instructions.md` point at it).
