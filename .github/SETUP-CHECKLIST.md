@@ -13,11 +13,19 @@ This repo fills the **gaps the org baseline can't reach**, by stack. Every row b
 |---|---|---|
 | Local pre-commit edge (secrets **and** Actions hardening — org scans server-side + doesn't audit workflows) | all | `pipx install pre-commit && pre-commit install` (gitleaks + zizmor + actionlint) |
 | Dependabot **version-update** ecosystems + 7-day cooldown (org does alerts/updates, not version-bump config) | *conditional* — whichever ecosystems this repo's manifests actually use | uncomment those ecosystem(s) in `.github/dependabot.yml`; leave the rest commented out. `github-actions` is already active by default — every repo has workflows, so that one isn't part of the decision |
-| **Scala SAST** — CodeQL can't parse Scala | *conditional* — Scala/JVM repos only | yes: keep `.github/workflows/semgrep.yml` enabled **+** add Scala Steward. no: **delete `.github/workflows/semgrep.yml`** |
-| **Container / IaC scanning** — CodeQL doesn't scan images | *conditional* — Docker/compose repos only | yes: keep `.github/workflows/trivy.yml` enabled. no: **delete `.github/workflows/trivy.yml`** |
+| **Scala SAST** — CodeQL can't parse Scala | *conditional* — Scala/JVM repos only | yes: **uncomment the `push`/`pull_request` triggers** in `.github/workflows/semgrep.yml` — it ships `workflow_dispatch`-only, so keeping the file is not the same as enabling it — **+** add Scala Steward. no: **delete `.github/workflows/semgrep.yml`** |
+| **Container / IaC scanning** — CodeQL doesn't scan images | *conditional* — Docker/compose repos only | yes: **uncomment the `push`/`pull_request` triggers** in `.github/workflows/trivy.yml` — it ships `workflow_dispatch`-only, so keeping the file is not the same as enabling it. no: **delete `.github/workflows/trivy.yml`** |
 | **pnpm release-age gate** — pnpm's 24h default < 7-day policy | *conditional* — JS/pnpm repos only | yes: add `minimum-release-age=10080` to `.npmrc` (kebab-case — the confirmed, pnpm-normalized key) — **then un-ignore the file**: remove the `.npmrc` line from this repo's `.gitignore`, or negate it `!.npmrc` (never `!/.npmrc`, which still hides a nested workspace `.npmrc`). If this `.npmrc` also carries a registry auth token, interpolate it — `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` — never a literal value. `sentinel` audits the gate by its *resolved* value (`pnpm config get minimumReleaseAge`), not by reading the file. no: don't create the file at all |
 
 ## Per repo (a few clicks)
+
+**The six decisions below can be run as one interview.** In Claude Code, `/onboard`
+asks all of them up front and applies the answers directly — including deleting the
+workflows this repo declines, which is the step most easily forgotten when it is left
+to a human. It never fills `{{PLACEHOLDER}}` text, edits `AGENTS.md` prose, or touches
+a pinned action SHA or `pre-commit` `rev:`. Working through this list by hand is
+equivalent; the skill is the same decisions with the actions attached.
+
 - [ ] Install and wire pre-commit first: `pipx install pre-commit && pre-commit install`
   (gaps table, row 1). Every other box below results in a commit, and none of the local
   hooks (gitleaks, zizmor, actionlint, end-of-file-fixer) run until this is done —
@@ -32,9 +40,11 @@ This repo fills the **gaps the org baseline can't reach**, by stack. Every row b
   the rest commented out — a repo with no manifest in an ecosystem gets no entry for it.
 - [ ] **Scala SAST** (`semgrep.yml`) — is this a Scala/JVM repo? If no, **delete
   `.github/workflows/semgrep.yml`** now, rather than leaving a disabled workflow for someone
-  to wonder about later. If yes, leave it enabled and add Scala Steward.
+  to wonder about later. If yes, uncomment its `push`/`pull_request` triggers (it ships
+  `workflow_dispatch`-only) and add Scala Steward.
 - [ ] **Container/IaC scanning** (`trivy.yml`) — does this repo build a Docker image or ship
-  compose/IaC files? If no, **delete `.github/workflows/trivy.yml`.** If yes, leave it enabled.
+  compose/IaC files? If no, **delete `.github/workflows/trivy.yml`.** If yes, uncomment its
+  `push`/`pull_request` triggers (it ships `workflow_dispatch`-only).
 - [ ] **pnpm release-age gate** — is this a JS/pnpm repo? If no, do nothing — don't create
   `.npmrc` at all. If yes, add it per the gaps table row above, un-ignore it, and verify the
   resolved value.
