@@ -7,7 +7,29 @@
       "Read(./**/*.pem)",
       "Read(./**/*.key)",
       "Read(./**/*.keystore)",
-      "Read(./**/*.p12)"
+      "Read(./**/*.p12)",
+      "Read(./**/id_rsa)",
+      "Read(./**/id_ecdsa)",
+      "Read(./**/id_ed25519)",
+      "Read(./**/credentials.json)",
+      "Read(./**/service-account.json)",
+      "Read(./**/wallet.json)",
+      "Read(./**/mnemonic.txt)",
+      "Read(./**/jwt.hex)",
+      "Read(./**/jwtsecret)",
+      "Read(./**/*.tfvars)",
+      "Read(./**/.yarnrc)",
+      "Read(./**/.yarnrc.yml)",
+      "Read(./**/*.pfx)",
+      "Read(./**/*.jks)",
+      "Read(./**/*.secret)",
+      "Read(./.secrets/**)",
+      "Read(./keystore/**)",
+      "Read(./**/*.nodekey)",
+      "Read(./**/.pgpass)",
+      "Read(./**/*.kubeconfig)",
+      "Read(./**/kubeconfig)",
+      "Read(./**/*.tfstate)"
     ]
   }
 }
