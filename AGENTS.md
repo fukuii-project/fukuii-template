@@ -31,7 +31,9 @@
 ## Security (agents: read this)
 - Repos are **public.** Never write a secret into a file, a commit, or a log.
 - Secrets reach code only via env vars / GitHub Actions secrets — **never literals.**
-- `.env` and key material are gitignored *and* denied to agents in `.claude/settings.json`.
+- `.env`, common key/credential file shapes, and SSH keys are gitignored and denied to agents via
+  `.claude/settings.json` — that deny-list is a **subset** of `.gitignore`'s SECURITY blocks, not a
+  mirror of them, so check both before assuming a sensitive shape is covered.
 
 ## Agents & MCP
 - Shared agents/skills come from the org plugin (when installed); repo-specific ones live in `.claude/`.
