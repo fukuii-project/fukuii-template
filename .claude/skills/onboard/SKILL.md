@@ -44,6 +44,12 @@ onboarding has already run. Re-run a single decision only if the operator names 
 **If the report says `CALIBRATION FAILED`, stop.** Its ignore results are not
 trustworthy and the `.npmrc` step depends on them.
 
+**If you edit that script, run `scripts/onboard-preflight.test.sh` first.** It
+builds throwaway git repos and asserts the states that are easy to get wrong in the
+unsafe direction — a tracked-but-broken symlink, an unstaged `rm`, a half-finished
+trigger uncomment. Four of them were live bugs. Every group carries a negative
+control, so a check that matches everything fails the suite too.
+
 **If `$ARGUMENTS` contains `dry-run`, do steps 2 and 3 as a written plan and change
 nothing.** Name every file that would be edited, created, or removed.
 
