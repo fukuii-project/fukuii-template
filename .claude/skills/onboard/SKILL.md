@@ -87,10 +87,10 @@ nothing.** Name every file that would be edited, created, or removed.
 
 ## 2. The interview (contextual — this is the whole point)
 
-Ask with `AskUserQuestion`. **It caps at 4 questions per call and 2-4 options per
-question**, so the six decisions take **two calls, back to back, before any edit**.
-That is the mechanism's limit, not a change to the design: nothing is applied until
-both cards are answered.
+Ask with `AskUserQuestion`. **A call supports 1-4 questions with 2-4 options each**,
+so the six decisions take **two calls, back to back, before any edit**. That is the
+mechanism's limit, not a change to the design: nothing is applied until both cards
+are answered.
 
 Attach the preflight's evidence to each question as the suggested default, and say
 what it was. Evidence proposes; the operator decides. A repo may legitimately want
@@ -120,52 +120,118 @@ Before call 2, draft a one-line description and 3-6 topics from the README and
 `AGENTS.md`, and show them, so option 1 is a real choice rather than a blank.
 GitHub topics are lowercase, digits and hyphens only.
 
-**If `AskUserQuestion` is unavailable** — it does not exist inside a subagent —
-ask all six in one numbered message and wait for one reply. Never guess an answer.
+**Every `header` above is at or under 12 characters, and that is a hard cap rather
+than a style choice.** The field is specified as a *"Short label for the question
+(max 12 characters)"*, on the same page as the 1-4 / 2-4 limits above
+(<https://code.claude.com/docs/en/agent-sdk/user-input>). `Docker/IaC` is the
+longest here at 10. Count before renaming one; today they all fit, and nothing
+enforces that from inside this file.
+
+**If `AskUserQuestion` is unavailable, ask all six in one numbered message and wait
+for one reply. Never guess an answer.** The documented limitation is narrower than
+"any subagent" — *"`AskUserQuestion` is not currently available in subagents spawned
+via the Agent tool"* (same page, Limitations). The conclusion is the same under
+either reading, so it is worth stating plainly: **never give this skill
+`context: fork`.** A forked skill runs as a subagent and cannot hold its own
+interview, and an interview that cannot ask is one that guesses.
 
 ## 3. Apply (mechanical, but each edit is exact)
 
 Work in this order. Report each as done or skipped.
+
+**The Branching bullet is written LAST, and the order is the point.** It is the
+sentinel the preflight reads, so writing it marks the apply phase **finished**, not
+started. Written first — where it used to be — a run that died partway would leave
+the sentinel set, `trivy.yml` already deleted, and every remaining step unapplied;
+the re-run would then refuse to start, reporting `ALREADY-ONBOARDED` over a
+half-onboarded repo. It is still
+"the one edit every answer produces"; that property is about *which* edit it is,
+not when it lands.
 
 **Uncommenting is one rule, used twice.** In both `dependabot.yml` and the workflow
 trigger blocks, an enabled line is the commented line minus exactly the `# ` at
 columns 3-4. `  # - package-ecosystem:` becomes `  - package-ecosystem:`, and
 `  #   directory:` becomes `    directory:`. Preserve every other character.
 
-1. **Branching → `AGENTS.md`.** Add one bullet under `## Conventions`, in the
-   operator's chosen policy, 1-2 sentences, in this exact shape:
-   `- **Branching:** …`
-   The `**Branching:**` prefix is the sentinel the preflight reads to detect that
-   onboarding has run. Do not reword it. This bullet is written on **every** run,
-   whichever policy was chosen — that is what makes the sentinel reliable.
-2. **Dependabot → `.github/dependabot.yml`.** Uncomment the stanza for each chosen
+**Re-verify recoverability immediately before deleting anything.** Step 1's report
+is a snapshot taken *before* a human-paced interview, and the operator may have
+opened, edited, staged or moved a target file while answering. Re-run
+`${CLAUDE_SKILL_DIR}/scripts/onboard-preflight.sh --no-remote` right before step 2
+and read section 3 again — one read-only call covers both deletions, and it is
+cheap next to deleting on a stale verdict. Ignore its verdict line while you are
+there: Branching is written last, so `NOT-ONBOARDED` is the correct reading at this
+point in the run. A target that has stopped being `RECOVERABLE` is a
+stop-and-report, never a delete.
+
+1. **Dependabot → `.github/dependabot.yml`.** Uncomment the stanza for each chosen
    ecosystem; leave the others commented. `sbt` follows from a yes on Q2, `docker`
    from Q3, `npm` from Q4, plus anything picked in Q5. Never touch
    `github-actions` — it is unconditional, because every repo has workflows. Every
-   stanza keeps its `cooldown` block.
-3. **Scala SAST → `.github/workflows/semgrep.yml`.**
-   - **Yes:** uncomment the `push` and `pull_request` triggers. The file ships
-     `workflow_dispatch`-only, so keeping it is *not* the same as enabling it.
-     Mention Scala Steward as the complementary dependency updater.
-   - **No:** `git rm .github/workflows/semgrep.yml` — only if the preflight said
-     `RECOVERABLE`, or `ABSENT`, in which case it is already done.
-4. **Container scanning → `.github/workflows/trivy.yml`.** Same two branches as
-   step 3, same pre-image gate.
-5. **pnpm gate.** On a **no**, create nothing. On a **yes**, both halves, in order:
+   stanza keeps its `cooldown` block: `default-days: 7` is the policy and is never
+   dropped.
+   **One exception to uncommenting verbatim: drop `semver-major-days` from the
+   `docker` stanza.** GitHub's cooldown reference carries a per-package-manager
+   table — *"`default-days` ... is supported for all package managers listed, while
+   `semver-major-days`, `semver-minor-days`, and `semver-patch-days` are supported
+   only where indicated"* — and **Docker's SemVer-bump column is "not supported"**
+   (verified against that table, 2026-08-21:
+   <https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#cooldown>).
+   Keep `default-days: 7`, which every listed manager supports and which is the
+   actual policy; drop the semver key; say you did. **Whether the stanzas already
+   in the file carry the same key is a separate finding owned by `sentinel`** — do
+   not fix it here, and do not edit the commented text of any stanza this repo did
+   not choose.
+2. **Scala SAST → `.github/workflows/semgrep.yml`.**
+   - **Yes:** uncomment **both** the `push` and the `pull_request` triggers. The
+     file ships `workflow_dispatch`-only, so keeping it is *not* the same as
+     enabling it — and uncommenting one of the two is worse than neither, because
+     the scanner then runs on half its triggers while the report reads like a
+     success. Mention Scala Steward as the complementary dependency updater.
+   - **No:** `git rm .github/workflows/semgrep.yml` — only on a fresh
+     `RECOVERABLE`. `ABSENT` means there is nothing to delete; do not treat any
+     other verdict as one.
+3. **Container scanning → `.github/workflows/trivy.yml`.** Same two branches as
+   step 2, same pre-image gate, same both-triggers rule.
+4. **pnpm gate.** On a **no**, create nothing. On a **yes**, both halves, in order:
    - Write `.npmrc` with `minimum-release-age=10080`. Kebab-case is the form pnpm
      normalizes from `.npmrc`; camelCase is not read there. If the repo needs
      registry auth, it interpolates — `//registry.npmjs.org/:_authToken=${NPM_TOKEN}` —
      never a literal token in a tracked file.
-   - **Un-ignore it**: delete the `.npmrc` line from `.gitignore`, and record why
-     in the comment above it. An ignored `.npmrc` is invisible to review, and a
-     `minimum-release-age=0` line in one silently defeats the gate — tracking it is
-     what puts that line in a PR diff. Do **not** write `!/.npmrc`: the leading
-     slash re-includes only the root file and leaves a nested workspace `.npmrc`
-     hidden, which is the same hole reopened one directory down.
-6. **Description and topics.** One call:
+   - **If that write is REFUSED, stop this step and hand it to the operator.** A
+     machine-wide `Edit(.npmrc)` deny is a reasonable thing for a machine to carry:
+     the rule matches on the path, and the grammar cannot tell a policy-only file
+     from one holding a live token, so it denies both. This skill ships to machines
+     whose permission settings nobody here controls, so treat the refusal as
+     expected, not exceptional. **Do not route around it** — not with `Bash`, not a
+     heredoc, not `sed`. Print the exact intended file content and the `.gitignore`
+     change below, say the write was refused and name the rule if the message did,
+     and let the operator apply both by hand. **Apply neither half rather than one**:
+     un-ignoring a file that does not exist leaves the repo looking configured and
+     unprotected.
+   - **Un-ignore it**: delete the `.npmrc` line from `.gitignore` and **rewrite the
+     comment block above it** — do not merely append to it. That block explains why
+     `.npmrc` is ignored and asserts "No leading slash, so a nested workspace
+     `.npmrc` is covered too"; with the `.npmrc` line gone, that sentence sits over
+     the surviving `.yarnrc` lines and describes a rule the file no longer has.
+     Replace it with why this repo tracks a policy-only `.npmrc`, and leave
+     `.yarnrc` / `.yarnrc.yml` ignored with their own reason intact. An ignored
+     `.npmrc` is invisible to review, and a `minimum-release-age=0` line in one
+     silently defeats the gate — tracking it is what puts that line in a PR diff.
+     Do **not** write `!/.npmrc`: the leading slash re-includes only the root file
+     and leaves a nested workspace `.npmrc` hidden, which is the same hole reopened
+     one directory down.
+5. **Description and topics.** One call:
    `gh repo edit --description "…" --add-topic a,b,c`
    Skip on a `Skip` answer, or if the preflight reported `gh` missing or
    unauthenticated — say so rather than failing silently.
+6. **Branching → `AGENTS.md`. LAST, after everything above has been applied or
+   explicitly skipped.** Add one bullet under `## Conventions`, in the operator's
+   chosen policy, 1-2 sentences, in this exact shape:
+   `- **Branching:** …`
+   The `**Branching:**` prefix is the sentinel the preflight reads. Do not reword
+   it. This bullet is written on **every** run, whichever policy was chosen — that
+   is what makes the sentinel reliable. If an earlier step stopped the run, do
+   **not** write it: an unwritten sentinel is what lets the re-run work.
 
 **Do not commit.** Leave everything in the working tree. The operator has just
 chosen a branching policy this run and may have chosen topic branches, so
@@ -177,10 +243,20 @@ what to stage.
 Re-run the preflight. An exit code proves a command ran, not that the repo changed
 the way you intended.
 
-Confirm against the answers: the Branching bullet is present, each chosen ecosystem
-reads `ACTIVE`, `YAML parse` is `OK`, declined workflows read `removed`, kept ones
-read `ACTIVE on push/PR`, and — if `.npmrc` was created — it reports **not** ignored
-with calibration still passing. Any mismatch is a finding to report, not to hide.
+Confirm against the answers: each chosen ecosystem reads `ACTIVE`, `YAML parse` is
+`OK`, declined workflows read `absent`, and — if `.npmrc` was created — it reports
+**not** ignored with calibration still passing.
+
+**A kept workflow must read exactly `ACTIVE on push + pull_request`.** A
+**`PARTIAL`** row is a FAILURE, not a near-miss: it means one trigger was
+uncommented and the other was not, so a security scanner runs on half its triggers
+while every other line of the report looks like success. `dispatch-only` on a
+workflow the operator chose to keep is the same failure, one step earlier.
+
+Last, the Branching bullet is present and the verdict has flipped to
+`ALREADY-ONBOARDED`. That flip is the signal the apply phase completed, so check it
+**after** the rows above rather than as the headline. Any mismatch is a finding to
+report, not to hide.
 
 ## 5. Report
 
