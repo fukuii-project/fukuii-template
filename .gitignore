@@ -140,7 +140,7 @@ result
 # repo. Only machine-local and agent-written state is held back. Do not invert this
 # into a blanket ignore: an agent inside an ignored directory never reaches a clone.
 # Committed by design: .claude/settings.json, .claude/{agents,skills,hooks,commands}/,
-# AGENTS.md.
+# .mcp.json, AGENTS.md.
 #
 # Most Claude Code runtime state does live in ~/.claude/, but NOT all of it:
 # background agent sessions create git worktrees under .claude/worktrees/, and an
