@@ -4,13 +4,15 @@
 # below by uncommenting — each MUST keep the cooldown block.
 version: 2
 updates:
+  # No semver-major-days: GitHub's cooldown support table lists GitHub Actions
+  # as "Default days supported / SemVer-bump days NOT supported" (verified live
+  # against the table, 2026-08-21). Absence here is deliberate — do not add it.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     cooldown:
       default-days: 7
-      semver-major-days: 21
 
   # --- uncomment the ecosystem(s) this repo uses ---
   #
@@ -48,7 +50,10 @@ updates:
   #   schedule: { interval: "weekly" }
   #   cooldown: { default-days: 7, semver-major-days: 21 }
   #
+  # No semver-major-days here either: Docker's SemVer-bump column is also "not
+  # supported" in that same table (sentinel, 2026-08-21) — default-days only.
+  #
   # - package-ecosystem: "docker"
   #   directory: "/"
   #   schedule: { interval: "weekly" }
-  #   cooldown: { default-days: 7, semver-major-days: 21 }
+  #   cooldown: { default-days: 7 }
